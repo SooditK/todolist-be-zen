@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, SetStateAction, useState } from "react";
+import { Fragment, SetStateAction } from "react";
 import toast from "react-hot-toast";
 import { useUpdateTodo } from "../utils/useUpdateTodo";
 import TagsInput from "./TagsInput";

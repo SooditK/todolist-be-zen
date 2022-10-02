@@ -7,8 +7,7 @@ interface TagsInputProps {
 }
 
 const TagsInput = ({ setTags, tags }: TagsInputProps) => {
-  //   const [tags, setTags] = React.useState<{ id: number; tag: string }[]>([]);
-
+  //@ts-ignore
   const addTags = (event) => {
     if (event.key === "Enter" && event.target.value !== "") {
       setTags([...tags, { id: tags.length + 1, tag: event.target.value }]);

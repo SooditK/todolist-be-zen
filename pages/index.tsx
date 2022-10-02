@@ -7,7 +7,6 @@ import {
   RiArrowLeftSLine,
   RiPushpinLine,
 } from "react-icons/ri";
-import toast from "react-hot-toast";
 import UpdateModal from "../components/UpdateModal";
 
 const Home = () => {
