@@ -9,7 +9,7 @@ export default async function handler(
     res.status(405).json({ error: "Method not allowed" });
     return;
   } else {
-    const { title, content } = req.body;
+    const { title, content, tags } = req.body;
     if (!title || !content) {
       res.status(400).json({ error: "Missing title or content" });
       return;
@@ -18,6 +18,7 @@ export default async function handler(
         data: {
           title,
           content,
+          tags,
         },
       });
       res.status(200).json(newPost);

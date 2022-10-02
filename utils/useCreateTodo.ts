@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 export function useCreateTodo() {
   const queryClient = useQueryClient();
   return useMutation(
-    async (data: { title: string; content: string }) => {
+    async (data: { title: string; content: string; tags: string[] }) => {
       const res = await fetch("/api/create", {
         method: "POST",
         headers: {

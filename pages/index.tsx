@@ -1,14 +1,28 @@
 import { Todo } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "../components/Modal";
 import { useFetchTodo } from "../utils/useFetchTodo";
-import { RiArrowRightSLine, RiArrowLeftSLine } from "react-icons/ri";
-import { useCompleteTodo } from "../utils/useCompleteTodo";
+import {
+  RiArrowRightSLine,
+  RiArrowLeftSLine,
+  RiPushpinLine,
+} from "react-icons/ri";
 import toast from "react-hot-toast";
+import UpdateModal from "../components/UpdateModal";
 
 const Home = () => {
   const [skip, setSkip] = useState(0);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [tags, setTags] = useState<{ id: number; tag: string }[]>([]);
+  const [input, setInput] = useState({
+    title: "",
+    content: "",
+    pinned: false,
+    completed: false,
+    id: 0,
+  });
   const [take, setTake] = useState(6);
   const {
     data: querydata,
@@ -16,8 +30,6 @@ const Home = () => {
     isLoading,
     refetch: refetchTodos,
   } = useFetchTodo(skip, take);
-  const completeTodoMutation = useCompleteTodo();
-  console.log(querydata);
   function handleModalOpen() {
     if (isModalOpen) {
       setIsModalOpen(false);
@@ -26,16 +38,30 @@ const Home = () => {
     }
   }
 
-  function completeTodoHandler(id: number) {
-    completeTodoMutation.mutate(id, {
-      onSuccess: () => {
-        toast.success("Todo Updated");
-        refetchTodos();
-      },
-      onError: (error) => {
-        toast.error(JSON.stringify(error));
-      },
+  // set the pinned todos to the top
+  useEffect(() => {
+    if (querydata && querydata.posts) {
+      const pinnedTodos = querydata?.posts.filter(
+        (todo: Todo) => todo.pinned === true
+      );
+      const unpinnedTodos = querydata?.posts.filter(
+        (todo: Todo) => todo.pinned === false
+      );
+      const sortedTodos = pinnedTodos.concat(unpinnedTodos);
+      setTodos(sortedTodos);
+    }
+  }, [querydata]);
+
+  function updateTodoHandler(todo: Todo) {
+    setInput({
+      title: todo.title,
+      content: todo.content!,
+      pinned: todo.pinned,
+      completed: todo.completed,
+      id: todo.id,
     });
+    setTags(todo.tags.map((tag, index) => ({ id: index, tag: tag })));
+    setIsUpdateModalOpen(true);
   }
 
   if (isLoading) {
@@ -48,6 +74,7 @@ const Home = () => {
       </div>
     );
   }
+  console.log(todos);
   return (
     <div className="py-0 px-8 bg-black text-white">
       <main className="flex flex-col items-center justify-center min-h-screen py-2">
@@ -56,19 +83,45 @@ const Home = () => {
           setIsOpen={setIsModalOpen}
           refetch={refetchTodos}
         />
+        <UpdateModal
+          isOpen={isUpdateModalOpen}
+          setIsOpen={setIsUpdateModalOpen}
+          refetch={refetchTodos}
+          input={input}
+          setInput={setInput}
+          tags={tags}
+          setTags={setTags}
+        />
         <div className="flex items-center justify-center flex-wrap max-w-[1200px]">
-          {querydata?.posts.map((item: Todo) => (
+          {todos.map((item: Todo) => (
             <div
               key={item.id}
-              onClick={() => completeTodoHandler(item.id)}
+              onClick={() => updateTodoHandler(item)}
               className={`${
                 item.completed
                   ? "bg-black hover:border-green-500 border-2 border-green-500"
                   : "bg-black hover:border-gray-600 border-gray-900"
-              } m-4 p-6 text-left text-inherit no-underline hover:cursor-pointer border border-solid rounded-lg min-h-[180px] transition duration-300 ease-in-out w-[300px]`}
+              } m-4 p-6 text-left text-inherit no-underline hover:cursor-pointer border border-solid rounded-lg min-h-[200px] transition duration-300 ease-in-out w-[300px]`}
             >
-              <h2 className="m-0 mr-4 mb-4 text-2xl">{item.title}</h2>
+              <h2 className="m-0 mr-4 flex mb-4 text-2xl">
+                {item.title}
+                {item.pinned && (
+                  <span>
+                    <RiPushpinLine className="ml-2 text-yellow-400" />
+                  </span>
+                )}
+              </h2>
               <p className="m-0 text-xl">{item.content}</p>
+              <ul className="flex flex-wrap gap-2 mt-4">
+                {item.tags.map((tag) => (
+                  <li
+                    key={tag}
+                    className="bg-gray-900 text-white px-2 py-1 rounded-lg"
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
